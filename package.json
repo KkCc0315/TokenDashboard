@@ -1,0 +1,39 @@
+{
+  "name": "token-aggregation-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n web,api -c cyan,green \"npm run dev --workspace web\" \"npm run start:dev --workspace api\"",
+    "dev:web": "npm run dev --workspace web",
+    "dev:api": "npm run start:dev --workspace api",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "db:up": "docker compose up -d mysql redis",
+    "db:down": "docker compose down",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "type-check": "npm run type-check --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3"
+  },
+  "lint-staged": {
+    "apps/api/src/**/*.ts": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "apps/web/**/*.{ts,tsx}": [
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
+}

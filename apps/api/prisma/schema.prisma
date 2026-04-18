@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum AlertCondition {
+  ABOVE
+  BELOW
+}
+
+enum AlertState {
+  ARMED
+  TRIGGERED
+}
+
+model User {
+  id           String          @id @default(cuid())
+  email        String          @unique @db.VarChar(255)
+  name         String          @db.VarChar(100)
+  passwordHash String          @db.VarChar(200)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  preferences  UserPreference?
+  watchlist    WatchlistItem[]
+}
+
+model UserPreference {
+  id             String   @id @default(cuid())
+  theme          String   @default("system") @db.VarChar(20)
+  defaultChain   String   @default("All") @db.VarChar(50)
+  compactNumbers Boolean  @default(true)
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model WatchlistItem {
+  id                 String         @id @default(cuid())
+  tokenId            String         @db.VarChar(50)
+  note               String         @db.VarChar(500)
+  targetPrice        Float
+  alertCondition     AlertCondition @default(ABOVE)
+  alertState         AlertState     @default(ARMED)
+  lastEvaluatedPrice Float?
+  lastTriggeredPrice Float?
+  lastTriggeredAt    DateTime?
+  userId             String
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alertEvents        AlertEvent[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@unique([userId, tokenId])
+  @@index([userId])
+}
+
+model AlertEvent {
+  id              String         @id @default(cuid())
+  watchlistItemId String
+  watchlistItem   WatchlistItem  @relation(fields: [watchlistItemId], references: [id], onDelete: Cascade)
+  userId          String
+  tokenId         String         @db.VarChar(50)
+  targetPrice     Float
+  observedPrice   Float
+  alertCondition  AlertCondition
+  createdAt       DateTime       @default(now())
+
+  @@index([userId, createdAt])
+  @@index([watchlistItemId])
+}
+
+model RefreshedToken {
+  tokenId     String   @id @db.VarChar(50)
+  name        String   @db.VarChar(100)
+  symbol      String   @db.VarChar(20)
+  chain       String   @db.VarChar(50)
+  category    String   @db.VarChar(50)
+  price       Float
+  change24h   Float
+  marketCap   Float
+  volume24h   Float
+  liquidity   String   @db.VarChar(20)
+  holders     String   @db.VarChar(20)
+  description String   @db.VarChar(1000)
+  createdAt   DateTime @default(now())
+  refreshedAt DateTime @updatedAt
+}
+
+model MarketOverview {
+  id          String   @id @default("latest")
+  updatedAt   DateTime
+  cacheStatus String   @db.VarChar(20)
+  dominance   String   @db.VarChar(100)
+  fearGreed   Int
+  trending    Json
+  refreshedAt DateTime @updatedAt
+}
