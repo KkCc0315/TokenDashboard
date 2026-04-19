@@ -4,8 +4,16 @@ dist
 .turbo
 .env
 .env.local
+.env.*.local
 coverage
 *.log
 apps/api/prisma/dev.db
 .claude/
 .codex-tmp/
+.DS_Store
+.idea/
+.vscode/
+*.tsbuildinfo
+.eslintcache
+*.swp
+*.swo

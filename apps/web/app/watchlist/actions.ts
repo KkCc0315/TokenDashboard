@@ -3,19 +3,23 @@
 import { revalidatePath } from "next/cache";
 import { createWatchlistItem, removeWatchlistItem } from "@/lib/api";
 import type { ActionState } from "@/lib/action-state";
-import type { AlertCondition } from "@/lib/types";
+import { watchlistItemSchema } from "@/lib/schemas";
 
 export async function addWatchlistItemAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const tokenId = String(formData.get("tokenId") ?? "").trim();
-  const note = String(formData.get("note") ?? "").trim();
-  const targetPrice = Number(formData.get("targetPrice") ?? Number.NaN);
-  const alertCondition = String(formData.get("alertCondition") ?? "ABOVE")
-    .trim()
-    .toUpperCase() as AlertCondition;
+  const parsed = watchlistItemSchema.safeParse({
+    tokenId: String(formData.get("tokenId") ?? ""),
+    note: String(formData.get("note") ?? ""),
+    targetPrice: Number(formData.get("targetPrice") ?? Number.NaN),
+    alertCondition: String(formData.get("alertCondition") ?? "ABOVE")
+      .trim()
+      .toUpperCase()
+  });
 
-  if (!tokenId || !note || !Number.isFinite(targetPrice)) {
-    return { error: "Token, note, and a valid target price are required.", success: false };
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message, success: false };
   }
+
+  const { tokenId, note, targetPrice, alertCondition } = parsed.data;
 
   try {
     await createWatchlistItem({

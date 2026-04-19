@@ -4,8 +4,7 @@ import { getDashboardData } from "@/lib/api";
 import { requireUserSession } from "@/lib/auth";
 
 export default async function HomePage() {
-  const user = await requireUserSession();
-  const data = await getDashboardData();
+  const [user, data] = await Promise.all([requireUserSession(), getDashboardData()]);
 
   return (
     <DashboardShell

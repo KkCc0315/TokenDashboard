@@ -10,8 +10,8 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "incremental": true,
-    "strictPropertyInitialization": false
+    "rootDir": "./src",
+    "incremental": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

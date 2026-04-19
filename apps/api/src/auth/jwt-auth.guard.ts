@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { CacheService } from "../cache/cache.service";
 import { PrismaService } from "../database/prisma.service";
 import type { AuthTokenPayload, AuthenticatedUser } from "./authenticated-user.interface";
 
@@ -14,7 +15,8 @@ type RequestWithHeaders = {
 export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    private readonly cache: CacheService
   ) {}
 
   async canActivate(context: ExecutionContext) {
@@ -32,14 +34,21 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const payload = await this.jwtService.verifyAsync<AuthTokenPayload>(token);
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: {
-        id: true,
-        email: true,
-        name: true
+
+    const cacheKey = `user:${payload.sub}`;
+    let user = this.cache.get<AuthenticatedUser>(cacheKey);
+
+    if (!user) {
+      user =
+        (await this.prisma.user.findUnique({
+          where: { id: payload.sub },
+          select: { id: true, email: true, name: true }
+        })) ?? undefined;
+
+      if (user) {
+        this.cache.set(cacheKey, user, 60);
       }
-    });
+    }
 
     if (!user) {
       throw new UnauthorizedException("User no longer exists");

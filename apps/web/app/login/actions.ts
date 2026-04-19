@@ -2,6 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { API_BASE_URL, clearSession, createSession } from "@/lib/auth";
+import { extractMessage } from "@/lib/error-message";
+import { loginSchema, registerSchema } from "@/lib/schemas";
 
 export type AuthActionState = {
   error: string | null;
@@ -11,26 +13,21 @@ const INITIAL_STATE: AuthActionState = {
   error: null
 };
 
-function getMessage(payload: unknown, fallback: string) {
-  if (!payload || typeof payload !== "object" || !("message" in payload)) {
-    return fallback;
-  }
-
-  const message = (payload as { message?: string | string[] }).message;
-
-  if (Array.isArray(message)) {
-    return message.join(", ");
-  }
-
-  return message ?? fallback;
-}
-
 async function authenticate(path: "login" | "register", formData: FormData, fallbackMessage: string) {
-  const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "").trim();
-  const name = String(formData.get("name") ?? "").trim();
+  const raw = {
+    email: String(formData.get("email") ?? ""),
+    password: String(formData.get("password") ?? ""),
+    name: String(formData.get("name") ?? "")
+  };
 
-  const payload = path === "register" ? { email, password, name } : { email, password };
+  const schema = path === "register" ? registerSchema : loginSchema;
+  const parsed = schema.safeParse(raw);
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message } satisfies AuthActionState;
+  }
+
+  const payload = parsed.data;
   let response: Response;
 
   try {
@@ -58,7 +55,7 @@ async function authenticate(path: "login" | "register", formData: FormData, fall
     }
 
     return {
-      error: getMessage(body, fallbackMessage)
+      error: extractMessage(body, fallbackMessage)
     } satisfies AuthActionState;
   }
 

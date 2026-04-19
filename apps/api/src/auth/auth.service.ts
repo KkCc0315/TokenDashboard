@@ -83,6 +83,14 @@ export class AuthService {
     }
   }
 
+  async refreshToken(userId: string, email: string) {
+    const accessToken = await this.jwtService.signAsync({
+      sub: userId,
+      email
+    });
+    return { accessToken };
+  }
+
   private async createAuthResponse(user: { id: string; email: string; name: string }) {
     const accessToken = await this.jwtService.signAsync({
       sub: user.id,

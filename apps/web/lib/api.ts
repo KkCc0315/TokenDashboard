@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { mockDashboardData, mockTokens } from "@/lib/mock-data";
 import { API_BASE_URL, getSessionToken, requireSessionToken } from "@/lib/auth";
+import { extractErrorFromResponse } from "@/lib/error-message";
 import type {
   AlertCondition,
   AuthenticatedUser,
@@ -33,24 +34,6 @@ const defaultUserPreferences: UserPreference = {
   defaultChain: "All",
   compactNumbers: true
 };
-
-async function getErrorMessage(response: Response, fallback: string) {
-  try {
-    const payload = (await response.json()) as { message?: string | string[] };
-
-    if (Array.isArray(payload.message)) {
-      return payload.message.join(", ");
-    }
-
-    if (payload.message) {
-      return payload.message;
-    }
-  } catch {
-    return fallback;
-  }
-
-  return fallback;
-}
 
 async function request<T>(path: string, options: RequestOptions<T>): Promise<RequestResult<T>> {
   try {
@@ -105,7 +88,7 @@ async function requestPersisted<T>(path: string, options: PersistedRequestOption
   }
 
   if (!response.ok) {
-    throw new Error(await getErrorMessage(response, `Unable to load ${path}`));
+    throw new Error(await extractErrorFromResponse(response, `Unable to load ${path}`));
   }
 
   return (await response.json()) as T;
@@ -128,7 +111,7 @@ async function authenticatedMutation<T = void>(path: string, init: RequestInit):
   }
 
   if (!response.ok) {
-    throw new Error(await getErrorMessage(response, "Request failed"));
+    throw new Error(await extractErrorFromResponse(response, "Request failed"));
   }
 
   if (response.status === 204) {

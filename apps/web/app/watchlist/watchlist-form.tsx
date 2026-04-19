@@ -77,8 +77,16 @@ export function WatchlistForm({ tokens }: { tokens: Token[] }) {
           />
         </label>
 
-        {state.error ? <p className="text-sm text-rose-600">{state.error}</p> : null}
-        {state.success ? <p className="text-sm text-emerald-600">Watchlist item saved.</p> : null}
+        {state.error ? (
+          <p className="text-sm text-rose-600" role="alert" aria-live="polite">
+            {state.error}
+          </p>
+        ) : null}
+        {state.success ? (
+          <p className="text-sm text-emerald-600" role="status" aria-live="polite">
+            Watchlist item saved.
+          </p>
+        ) : null}
 
         <SubmitButton pendingText="Saving...">Save watchlist item</SubmitButton>
       </form>

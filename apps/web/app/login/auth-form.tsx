@@ -71,7 +71,11 @@ export function AuthForm() {
           />
         </label>
 
-        {state.error ? <p className="text-sm text-rose-600">{state.error}</p> : null}
+        {state.error ? (
+          <p className="text-sm text-rose-600" role="alert" aria-live="polite">
+            {state.error}
+          </p>
+        ) : null}
 
         <button
           type="submit"

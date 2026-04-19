@@ -16,7 +16,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "type-check": "npm run type-check --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "prepare": "husky"
   },
   "devDependencies": {
     "concurrently": "^9.0.0",
@@ -27,10 +28,11 @@
   "lint-staged": {
     "apps/api/src/**/*.ts": [
       "prettier --write",
-      "eslint --fix"
+      "eslint --fix --ignore-pattern '**/*.spec.ts'"
     ],
     "apps/web/**/*.{ts,tsx}": [
-      "prettier --write"
+      "prettier --write",
+      "eslint --fix"
     ],
     "*.{json,md,yml,yaml}": [
       "prettier --write"
