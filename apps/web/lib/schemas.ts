@@ -1,14 +1,17 @@
 import { z } from "zod";
 
+const emailField = z.string().trim().min(1, "Email is required").email("Invalid email address");
+const passwordField = z.string().min(8, "Password must be at least 8 characters");
+
 export const loginSchema = z.object({
-  email: z.string().trim().min(1, "Email is required").email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters")
+  email: emailField,
+  password: passwordField
 });
 
 export const registerSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters"),
-  email: z.string().trim().min(1, "Email is required").email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters")
+  email: emailField,
+  password: passwordField
 });
 
 export const watchlistItemSchema = z.object({
@@ -21,8 +24,8 @@ export const watchlistItemSchema = z.object({
 });
 
 export const profileSchema = z.object({
-  name: z.string().trim().min(1, "Name is required"),
-  email: z.string().trim().min(1, "Email is required").email("Invalid email address")
+  name: z.string().trim().min(2, "Name must be at least 2 characters"),
+  email: emailField
 });
 
 export const preferencesSchema = z.object({

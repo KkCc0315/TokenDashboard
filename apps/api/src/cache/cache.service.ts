@@ -22,17 +22,15 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getOrSet<T>(key: string, ttlSeconds: number, factory: () => T | Promise<T>): Promise<T> {
-    const now = Date.now();
-    const existing = this.store.get(key) as CacheEntry<T> | undefined;
-
-    if (existing && existing.expiresAt > now) {
-      return existing.value;
+    const cached = this.get<T>(key);
+    if (cached !== undefined) {
+      return cached;
     }
 
     const value = await factory();
     this.store.set(key, {
       value,
-      expiresAt: now + ttlSeconds * 1000
+      expiresAt: Date.now() + ttlSeconds * 1000
     });
 
     return value;

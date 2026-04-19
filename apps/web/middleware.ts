@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { SESSION_COOKIE_NAME, API_BASE_URL } from "@/lib/auth";
 
-const SESSION_COOKIE_NAME = "token-dashboard-session";
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api";
 const REFRESH_THRESHOLD_SECONDS = 6 * 60 * 60; // 6 hours
 
+// No signature verification here — this only reads the exp claim to decide whether
+// to attempt a proactive refresh. The API validates the signature on every request.
 function decodeTokenPayload(token: string): { exp?: number } | null {
   try {
     const parts = token.split(".");

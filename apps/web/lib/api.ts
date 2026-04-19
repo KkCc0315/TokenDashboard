@@ -24,10 +24,15 @@ type RequestOptions<T> = {
   authRequired?: boolean;
 };
 
-type PersistedRequestOptions = {
-  token?: string | null;
-  authRequired?: boolean;
-};
+type PersistedRequestOptions = Omit<RequestOptions<never>, "fallback">;
+
+function buildAuthHeaders(token?: string | null): Headers {
+  const headers = new Headers();
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  return headers;
+}
 
 const defaultUserPreferences: UserPreference = {
   theme: "system",
@@ -37,11 +42,7 @@ const defaultUserPreferences: UserPreference = {
 
 async function request<T>(path: string, options: RequestOptions<T>): Promise<RequestResult<T>> {
   try {
-    const headers = new Headers();
-
-    if (options.token) {
-      headers.set("Authorization", `Bearer ${options.token}`);
-    }
+    const headers = buildAuthHeaders(options.token);
 
     const response = await fetch(`${API_BASE_URL}${path}`, {
       cache: "no-store",
@@ -72,11 +73,7 @@ async function request<T>(path: string, options: RequestOptions<T>): Promise<Req
 }
 
 async function requestPersisted<T>(path: string, options: PersistedRequestOptions = {}) {
-  const headers = new Headers();
-
-  if (options.token) {
-    headers.set("Authorization", `Bearer ${options.token}`);
-  }
+  const headers = buildAuthHeaders(options.token);
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     cache: "no-store",

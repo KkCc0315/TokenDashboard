@@ -48,7 +48,8 @@ export class AuthService {
   async login(payload: LoginDto) {
     try {
       const user = await this.prisma.user.findUnique({
-        where: { email: payload.email.toLowerCase() }
+        where: { email: payload.email.toLowerCase() },
+        select: { id: true, email: true, name: true, passwordHash: true }
       });
 
       if (!user || !(await verifyPassword(payload.password, user.passwordHash))) {
@@ -84,23 +85,17 @@ export class AuthService {
   }
 
   async refreshToken(userId: string, email: string) {
-    const accessToken = await this.jwtService.signAsync({
-      sub: userId,
-      email
-    });
+    const accessToken = await this.signToken(userId, email);
     return { accessToken };
   }
 
   private async createAuthResponse(user: { id: string; email: string; name: string }) {
-    const accessToken = await this.jwtService.signAsync({
-      sub: user.id,
-      email: user.email
-    });
+    const accessToken = await this.signToken(user.id, user.email);
+    return { accessToken, user };
+  }
 
-    return {
-      accessToken,
-      user
-    };
+  private signToken(userId: string, email: string) {
+    return this.jwtService.signAsync({ sub: userId, email });
   }
 
   private rethrowDatabaseUnavailable(error: unknown) {

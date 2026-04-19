@@ -11,8 +11,6 @@ export async function addWatchlistItemAction(_prev: ActionState, formData: FormD
     note: String(formData.get("note") ?? ""),
     targetPrice: Number(formData.get("targetPrice") ?? Number.NaN),
     alertCondition: String(formData.get("alertCondition") ?? "ABOVE")
-      .trim()
-      .toUpperCase()
   });
 
   if (!parsed.success) {
