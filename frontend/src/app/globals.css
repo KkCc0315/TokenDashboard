@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: #0b0d12;
+  color: #e6e8ee;
+  font-feature-settings:
+    'rlig' 1,
+    'calt' 1;
+}
+
+* {
+  border-color: #222835;
+}
+
+::selection {
+  background-color: #7c5cff40;
+}
